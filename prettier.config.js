@@ -1,0 +1,3 @@
+module.export = {
+  trailingComma: "none",
+};

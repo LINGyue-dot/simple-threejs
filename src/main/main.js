@@ -3,17 +3,21 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 const scene = new three.Scene();
 
-const camera = new three.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
+const camera = new three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 0, 10);
 scene.add(camera);
 
-const cubeGeometry = new three.BoxGeometry(1, 1, 1);
+const cubeGeometry = new three.BufferGeometry();
 const cubeMaterial = new three.MeshBasicMaterial({ color: 0xffffff });
+// dprint-ignore
+const position = new Float32Array([
+    -1,-1,1, // 
+    1,-1,1,
+    1,1,1,
+    1,1,1,
+    -1,1,1,
+    -1,-1,1
+])
 
 const cube = new three.Mesh(cubeGeometry, cubeMaterial);
 
@@ -38,7 +42,7 @@ function render(timer) {
 }
 render();
 
-window.addEventListener("resize", function () {
+window.addEventListener("resize", function() {
   // 摄像头
   camera.aspect = window.innerWidth / window.innerHeight;
   // 更新投影矩阵
