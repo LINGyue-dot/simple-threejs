@@ -19,6 +19,9 @@ const position = new Float32Array([
     -1,-1,1
 ])
 
+const bufferAttribute = new three.BufferAttribute(position, 3);
+cubeGeometry.setAttribute("position", bufferAttribute);
+
 const cube = new three.Mesh(cubeGeometry, cubeMaterial);
 
 scene.add(cube);
