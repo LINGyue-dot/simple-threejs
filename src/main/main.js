@@ -12,6 +12,9 @@ const doorTexture = textureLoader.load("https://typora-1300781048.cos.ap-beijing
 const doorAlphaTexture = textureLoader.load(
   "https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310102246046.jpg"
 );
+const aoDoorTexture = textureLoader.load(
+  "https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310102312369.jpg"
+);
 
 const cubeGeometry = new three.BoxGeometry(2, 2, 2);
 const cubeMaterial = new three.MeshBasicMaterial({
@@ -19,12 +22,16 @@ const cubeMaterial = new three.MeshBasicMaterial({
   map: doorTexture,
   alphaMap: doorAlphaTexture,
   //  alphaMap 对应的黑色区域变为透明
-  transparent: true
+  transparent: true,
+  // aoMap 用黑色表示环境光遮挡效果，越靠近黑色遮挡效果越明显
+  aoMap: aoDoorTexture
 });
+cubeGeometry.setAttribute("uv2", new three.BufferAttribute(cubeGeometry.attributes.uv.array, 2));
 
 const cube = new three.Mesh(cubeGeometry, cubeMaterial);
 cube.rotateY(Math.PI / 4);
 cube.rotateX(Math.PI / 4);
+
 scene.add(cube);
 
 const renderer = new three.WebGL1Renderer();
