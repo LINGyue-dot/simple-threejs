@@ -8,15 +8,19 @@ camera.position.set(1, 1, 10);
 scene.add(camera);
 
 const textureLoader = new three.TextureLoader();
-const minecraftTexture = textureLoader.load(
-  "https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310102229521.png"
+const doorTexture = textureLoader.load("https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310102246827.jpg");
+const doorAlphaTexture = textureLoader.load(
+  "https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310102246046.jpg"
 );
 
-minecraftTexture.magFilter = three.NearestFilter;
-minecraftTexture.minFilter = three.NearestFilter;
-
 const cubeGeometry = new three.BoxGeometry(2, 2, 2);
-const cubeMaterial = new three.MeshBasicMaterial({ color: 0xffffff, map: minecraftTexture });
+const cubeMaterial = new three.MeshBasicMaterial({
+  color: 0xffffff,
+  map: doorTexture,
+  alphaMap: doorAlphaTexture,
+  //  alphaMap 对应的黑色区域变为透明
+  transparent: true
+});
 
 const cube = new three.Mesh(cubeGeometry, cubeMaterial);
 cube.rotateY(Math.PI / 4);
