@@ -15,22 +15,32 @@ const doorAlphaTexture = textureLoader.load(
 const aoDoorTexture = textureLoader.load(
   "https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310102312369.jpg"
 );
+const displaceDoortexture = textureLoader.load(
+  "https://typora-1300781048.cos.ap-beijing.myqcloud.com/img/202310112243613.jpg"
+);
 
-const cubeGeometry = new three.BoxGeometry(2, 2, 2);
-const cubeMaterial = new three.MeshBasicMaterial({
+// 增加 xyz 都添加上 200 个点
+const cubeGeometry = new three.BoxGeometry(2, 2, 2, 200, 200, 200);
+const cubeMaterial = new three.MeshStandardMaterial({
   color: 0xffffff,
   map: doorTexture,
   alphaMap: doorAlphaTexture,
   //  alphaMap 对应的黑色区域变为透明
   transparent: true,
   // aoMap 用黑色表示环境光遮挡效果，越靠近黑色遮挡效果越明显
-  aoMap: aoDoorTexture
+  aoMap: aoDoorTexture,
+  displacementMap: displaceDoortexture,
+  displacementScale: 0.2
 });
 cubeGeometry.setAttribute("uv2", new three.BufferAttribute(cubeGeometry.attributes.uv.array, 2));
 
 const cube = new three.Mesh(cubeGeometry, cubeMaterial);
 cube.rotateY(Math.PI / 4);
 cube.rotateX(Math.PI / 4);
+
+const light = new three.DirectionalLight(0xffffff);
+light.position.set(10, 0, 0);
+scene.add(light);
 
 scene.add(cube);
 
