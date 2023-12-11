@@ -38,11 +38,11 @@ const cube = new three.Mesh(cubeGeometry, cubeMaterial);
 cube.rotateY(Math.PI / 4);
 cube.rotateX(Math.PI / 4);
 
-const light = new three.DirectionalLight(0xffffff);
-light.position.set(10, 0, 0);
-scene.add(light);
+// const light = new three.AmbientLight(0xffffff);
+// light.position.set(10, 0, 0);
+// scene.add(light);
 
-scene.add(cube);
+// scene.add(cube);
 
 const renderer = new three.WebGL1Renderer();
 
@@ -53,6 +53,24 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 const axesHelper = new three.AxesHelper(5);
 scene.add(axesHelper);
+
+// 创建白色材质
+const material = new three.LineBasicMaterial({ color: 0xffffff });
+
+// 创建贝塞尔曲线几何体
+const curve = new three.QuadraticBezierCurve(
+  new three.Vector2(-2, 0), // 起点
+  new three.Vector2(0, 2), // 控制点
+  new three.Vector2(2, 0) // 终点
+);
+const points = curve.getPoints(50);
+const geometry = new three.BufferGeometry().setFromPoints(points);
+
+// 创建曲线对象
+const curveObject = new three.Line(geometry, material);
+
+// 将曲线添加到场景
+scene.add(curveObject);
 
 function render(timer) {
   // 使用渲染器通过相机渲染场景
