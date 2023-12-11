@@ -16,7 +16,6 @@ renderer.setSize(width, height);
 camera.position.set(500, 500, 500);
 camera.lookAt(scene.position);
 
-// 暂时无法生效这是为什么？
 const pointLight = new THREE.PointLight(0xffff00, 10000);
 pointLight.position.set(40, 100, 60);
 scene.add(pointLight);
