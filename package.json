@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel src/index.html",
+    "sm": "parcel src/map/index.html",
     "build": "parcel build src/index.html"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
     "parcel": "^2.9.3"
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^21.0.0",
     "dat.gui": "^0.7.9",
     "dprint": "^0.41.0",
     "gsap": "^3.12.2",
