@@ -12,7 +12,7 @@
  * 暂留的问题
  * 1. 俯视如何实现的？
  * 2. cos sin JS 计算并不准确，那如何准确 ？
- * 3.
+ * 3. 旋转时候只是围绕 X Y Z 某两个轴进行转动吗？
  */
 
 import * as THREE from "three";
@@ -22,11 +22,11 @@ import { OrbitControls } from "../three_orbit";
 
 const width = window.innerWidth - 50;
 const height = window.innerHeight - 50;
-
 export default class DemoScene {
   renderer;
   scene;
   camera;
+  target = new THREE.Vector3(0, 0, 0);
 
   constructor() {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -37,11 +37,11 @@ export default class DemoScene {
     this.scene = new THREE.Scene();
 
     this.gridHelper = new THREE.GridHelper(10000, 100);
-    this.scene.add(this.gridHelper);
+    // this.scene.add(this.gridHelper);
 
     this.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 10000);
     this.camera.position.set(500, 500, 500);
-    this.camera.lookAt(0, 0, 0);
+    this.camera.lookAt(this.target);
     this.scene.add(this.camera);
 
     this.addTest();
@@ -74,26 +74,41 @@ export default class DemoScene {
     bindEventCallback("");
   }
 
-  rotateAroundY(angle = Math.PI / 4) {
-    const rotateMatrix = new THREE.Matrix3();
-    // 注意由于是投影到 x - z 坐标系（绕 y 轴旋转），所以需要将 y z 互换
-    rotateMatrix.set(cos(angle), 0, -sin(angle), 0, 1, 0, sin(angle), 0, cos(angle));
+  // https://juejin.cn/post/7280747833384665143
+  // x = OA * sin beta * sin alpha
+  // y = OA * cos beta
+  // z = OA * sin beta * cos alpha
 
-    const newPos = new THREE.Vector3().copy(this.camera.position);
-    newPos.applyMatrix3(rotateMatrix);
-    // 旋转矩阵
-    this.camera.position.set(newPos.x, newPos.y, newPos.z);
-    this.camera.lookAt(0, 0, 0);
+  // 所以当水平旋转时候是 alpha 发生变化，offsetX > 0 时候 offsetAlpha > 0 , beta 不变 ，假设变化角度为 n
+  // x = OA *  sin (beta) * sin (alpha +n)
+  // y = OA * cos beta
+  // z = OA * sin beta * cos (alpha +n)
+  // 水平旋转
+  rotateHorizaontal(angle = Math.PI / 4) {
+    angle = -angle;
+    const length = this.camera.position.distanceTo(this.target);
+    const beta = Math.acos(this.camera.position.y / length);
+    const alpha = Math.atan2(this.camera.position.x, this.camera.position.z);
+    this.camera.position.set(length * Math.sin(beta) * Math.sin(alpha + angle), length * Math.cos(beta),
+      length * Math.sin(beta) * Math.cos(alpha + angle));
+    this.camera.lookAt(this.target);
   }
 
-  rotateAroundX(angle = Math.PI / 4) {
-    // x 与 z 互换
-    const rotateMatrix = new THREE.Matrix3();
-    rotateMatrix.set(1, 0, 0, 0, cos(angle), sin(angle), 0, -sin(angle), cos(angle));
-    const newPos = new THREE.Vector3().copy(this.camera.position);
+  // 垂直旋转时候
+  // x = OA * sin(beta+n) * sin(alpha)
+  // y = OA * cos(beta+n)
+  // z = OA * sin(beta+n) * cos(alpha)
+  rotateVertical(angle = Math.PI / 4) {
+    angle = -angle;
+    const length = this.camera.position.distanceTo(this.target);
+    const beta = Math.acos(this.camera.position.y / length);
+    const alpha = Math.atan2(this.camera.position.x, this.camera.position.z);
+    console.log(angle, Math.cos(beta + angle) === Math.cos(beta), Math.cos(beta + angle),
+      length * Math.cos(beta + angle), this.camera.position.y);
+    // console.log(angle, beta, beta + angle, length * Math.cos(beta + angle), Math.cos(beta + angle));
 
-    newPos.applyMatrix3(rotateMatrix);
-    this.camera.position.set(newPos.x, newPos.y, newPos.z);
-    this.camera.lookAt(0, 0, 0);
+    this.camera.position.set(length * Math.sin(beta + angle) * Math.sin(alpha), length * Math.cos(beta + angle),
+      length * Math.sin(beta + angle) * Math.cos(alpha));
+    this.camera.lookAt(this.target);
   }
 }

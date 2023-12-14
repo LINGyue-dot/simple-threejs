@@ -10,10 +10,11 @@ export function onMouseMove(event) {
   if (!move) return;
   const offsetX = event.clientX - store.startLocation.x;
   const offsetY = event.clientY - store.startLocation.y;
+  console.log(event.clientX, offsetX / 200 * 2 * Math.PI);
+  console.log(offsetY, offsetY / 200 * 2 * Math.PI);
 
-  // 移动 500px 就 2PI
-  store.demo.rotateAroundY(offsetX / 1000 * 2 * Math.PI);
-  store.demo.rotateAroundX(offsetY / 1000 * 2 * Math.PI);
+  store.demo.rotateHorizaontal(offsetX / 200 * 2 * Math.PI);
+  store.demo.rotateVertical(offsetY / 200 * 2 * Math.PI);
 
   store.startLocation = { x: event.clientX, y: event.clientY };
 }
