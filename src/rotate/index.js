@@ -4,8 +4,9 @@
  * x = distance * sin(beta) * sin(alpha)
  * y = distance * cos(beta)
  * z = distance * sin(beta) * cos(alpha)
- * 1. 左键旋转视角暂时还有问题，上下只能支持 180 旋转，不能 360
+ * 1. 左键旋转视角暂时还有问题，上下只能支持 180 旋转，不能 360 ---> OrbitControl 也是如此
  * 2.
+ * 写完看下 potreejs 是怎么搞的？
  */
 import * as THREE from "three";
 
@@ -19,7 +20,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 10000);
 camera.position.set(500, 500, 0);
 camera.lookAt(0, 0, 0);
 scene.add(camera);
@@ -37,8 +38,9 @@ scene.add(axis);
 
 // 1. 左键
 const dom = renderer.domElement;
-const store = { type: null, preLocation: {}, target: new THREE.Vector3(0, 0, 0) };
+const store = { type: null, preLocation: {}, target: new THREE.Vector3(0, 0, 0), scale: 1 };
 dom.addEventListener("mousedown", function(event) {
+  event.preventDefault();
   store.preLocation = { x: event.clientX, y: event.clientY };
   switch (event.button) {
     case 0:
@@ -61,6 +63,7 @@ dom.addEventListener("mousemove", function(event) {
   const offsetY = event.clientY - store.preLocation.y;
   store.preLocation = { x: event.clientX, y: event.clientY };
   store.type === "left" && handleLeftDrag(offsetX, offsetY);
+  store.type === "right" && handleRightDrag(offsetX, offsetY);
 });
 
 dom.addEventListener("mouseup", function() {
@@ -75,26 +78,18 @@ dom.addEventListener("wheel", function(event) {
 
 // 左键拖拽行为
 function handleLeftDrag(offsetX, offsetY) {
-  const distance = camera.position.distanceTo(store.target);
-  // 注意 alpha/beta 为  0 -> 2PI
-  // alpha 是从 z 正轴，在 xz 坐标系开始顺时针旋转，取值范围是 [-PI,PI]
-  const beta = Math.acos(camera.position.y / distance);
+  const spherical = new THREE.Spherical();
+  spherical.setFromVector3(camera.position);
+  const deltaPhi = -offsetY / 200 * 2 * Math.PI;
+  const deltaTheta = -offsetX / 200 * 2 * Math.PI;
+  // 限制在 [1,179] 之间
+  // 因为 phi = 0 or phi = Math.PI 时候，会使得 x y 突然复原
+  const tempPhi = deltaPhi + spherical.phi;
+  const finalPhi = tempPhi >= Math.PI ? Math.PI * 179 / 180 : tempPhi <= 0 ? 1 / 180 * Math.PI : tempPhi;
 
-  const alpha = Math.atan2(camera.position.x, camera.position.z) + 2 * Math.PI;
-  // Math.atan2 -> [-PI,PI]
-
-  // A 坐标 ==>
-  // x = distance * sin(beta) * sin(alpha)
-  // y = distance * cos(beta)
-  // z = distance * sin(beta) * cos(alpha)
-
-  // 垂直拖拽改变 beta
-  // 200 像素就转一圈
-  const deltaBeta = -offsetY / 200 * 2 * Math.PI;
-  const deltaAlpha = -offsetX / 100 * 2 * Math.PI;
-
-  camera.position.set(distance * Math.sin(beta + deltaBeta) * Math.sin(alpha + deltaAlpha),
-    distance * Math.cos(beta + deltaBeta), distance * Math.sin(beta + deltaBeta) * Math.cos(alpha + deltaAlpha));
+  spherical.set(spherical.radius, finalPhi, spherical.theta + deltaTheta);
+  const location = new THREE.Vector3().setFromSpherical(spherical);
+  camera.position.copy(location);
   camera.lookAt(store.target);
 }
 
@@ -103,6 +98,7 @@ function handleLeftDrag(offsetX, offsetY) {
 // y = target.y + distance * cos(beta) * scale
 // z = target.z + distance * sin(beta) * cos(alpha) * scale
 function scale(ration = 0.9) {
+  store.scale *= ration;
   const distance = camera.position.distanceTo(store.target);
   const beta = Math.acos(camera.position.y / distance);
   const alpha = Math.atan2(camera.position.x, camera.position.z) + 2 * Math.PI;
@@ -113,8 +109,31 @@ function scale(ration = 0.9) {
 }
 
 // 右键移动功能
-function handleRightDrag(offsetX,offsetY){
+// 计算摄像机坐标系 uvw
+// 平移就是相对 uvw 坐标系进行移动，例如左移就是 u 变大，上移就是 v 变小
+// 通过相对矩阵计算出，xyz 的变化
+function handleRightDrag(offsetX, offsetY) {
+  const N = new THREE.Vector3().subVectors(store.target, camera.position).normalize();
+  const up = camera.up;
+  const U = new THREE.Vector3().crossVectors(up, N).normalize();
+  const V = new THREE.Vector3().crossVectors(N, U).normalize();
 
+  // 向左移动 p ，那么此时需要投影到 xyz 上
+  const deltaXByHor = new THREE.Vector3().copy(U).projectOnVector(new THREE.Vector3(1, 0, 0)).multiplyScalar(offsetX);
+  const deltaYByHor = new THREE.Vector3().copy(U).projectOnVector(new THREE.Vector3(0, 1, 0)).multiplyScalar(offsetX);
+  const deltaZByHor = new THREE.Vector3().copy(U).projectOnVector(new THREE.Vector3(0, 0, 1)).multiplyScalar(offsetX);
+  const deltaXByVect = new THREE.Vector3().copy(V).projectOnVector(new THREE.Vector3(1, 0, 0)).multiplyScalar(offsetY);
+  const deltaYByVect = new THREE.Vector3().copy(V).projectOnVector(new THREE.Vector3(0, 1, 0)).multiplyScalar(offsetY);
+  const deltaZByVect = new THREE.Vector3().copy(V).projectOnVector(new THREE.Vector3(0, 0, 1)).multiplyScalar(offsetY);
+  const deltaX = deltaXByHor.add(deltaXByVect);
+  const deltaY = deltaYByHor.add(deltaYByVect);
+  const deltaZ = deltaZByHor.add(deltaZByVect);
+  const delta = deltaX.add(deltaY).add(deltaZ);
+
+  camera.position.add(delta);
+
+  store.target.add(delta);
+  camera.lookAt(store.target);
 }
 
 function render() {
@@ -123,3 +142,7 @@ function render() {
 }
 
 render();
+
+document.oncontextmenu = function() {
+  return false;
+};

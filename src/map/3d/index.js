@@ -13,6 +13,7 @@
  * 1. 俯视如何实现的？
  * 2. cos sin JS 计算并不准确，那如何准确 ？
  * 3. 旋转时候只是围绕 X Y Z 某两个轴进行转动吗？
+ * 4. 相机 lookAt 的是？
  */
 
 import * as THREE from "three";
@@ -37,7 +38,7 @@ export default class DemoScene {
     this.scene = new THREE.Scene();
 
     this.gridHelper = new THREE.GridHelper(10000, 100);
-    // this.scene.add(this.gridHelper);
+    this.scene.add(this.gridHelper);
 
     this.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 10000);
     this.camera.position.set(500, 500, 500);
@@ -55,8 +56,8 @@ export default class DemoScene {
     const axesHelper = new THREE.AxesHelper(1000);
     this.scene.add(axesHelper);
 
-    // const control = new OrbitControls(this.camera, this.renderer.domElement);
-    // control.autoRotate = true;
+    const control = new OrbitControls(this.camera, this.renderer.domElement);
+    control.autoRotate = true;
 
     // temp just for test
     const geometry = new THREE.BoxGeometry(100, 100, 100);

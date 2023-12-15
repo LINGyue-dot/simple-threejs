@@ -17,7 +17,7 @@ export function onMouseMove(event) {
   store.demo.rotateVertical(offsetY / 200 * 2 * Math.PI);
 
   store.startLocation = { x: event.clientX, y: event.clientY };
-}
+
 
 export function onMouseUp(event) {
   store.startLocation = null;
@@ -25,6 +25,7 @@ export function onMouseUp(event) {
 }
 
 export function initEvent(demo) {
+  return;
   store.demo = demo;
   const dom = demo.renderer.domElement;
   dom.addEventListener("mousedown", onMouseDown);
