@@ -7,6 +7,7 @@
  * 1. 左键旋转视角暂时还有问题，上下只能支持 180 旋转，不能 360 ---> OrbitControl 也是如此
  * 2.
  * 写完看下 potreejs 是怎么搞的？
+ * 视图坐标系如何得出的？为什么是如此叉乘计算出来的
  */
 import * as THREE from "three";
 
@@ -78,6 +79,7 @@ dom.addEventListener("wheel", function(event) {
 
 // 左键拖拽行为
 function handleLeftDrag(offsetX, offsetY) {
+  // FIXME 这个有点问题，因为他始终绕着原点旋转，而非 target
   const spherical = new THREE.Spherical();
   spherical.setFromVector3(camera.position);
   const deltaPhi = -offsetY / 200 * 2 * Math.PI;
