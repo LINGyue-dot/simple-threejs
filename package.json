@@ -9,7 +9,8 @@
     "sm": "parcel src/map/index.html",
     "build": "parcel build src/index.html",
     "st": "parcel temp.html",
-    "sr": "parcel ./src/rotate/index.html"
+    "sr": "parcel ./src/rotate/index.html",
+    "sc": "parcel ./src/cube/index.html"
   },
   "keywords": [],
   "author": "",
