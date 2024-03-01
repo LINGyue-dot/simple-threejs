@@ -10,7 +10,8 @@
     "build": "parcel build src/index.html",
     "st": "parcel temp.html",
     "sr": "parcel ./src/rotate/index.html",
-    "sc": "parcel ./src/cube/index.html"
+    "sc": "parcel ./src/cube/index.html",
+    "sg": "parcel ./src/simple-glsl/index.html"
   },
   "keywords": [],
   "author": "",
